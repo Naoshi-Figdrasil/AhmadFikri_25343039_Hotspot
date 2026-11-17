@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="-1">
+<title>Login WiFi | $(hostname)</title>
+<style>
+:root{--bg:#0b3954;--bg2:#08293d;--card:#f7fbfc;--ink:#10303f;--mut:#5d7482;--acc:#e8912d;--acc2:#c97716;--line:#d5e2e8;--err:#b3261e;--ok:#1b7f4b}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{min-height:100vh;min-height:100svh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:radial-gradient(1200px 600px at 20% -10%,#14587f 0,transparent 60%),linear-gradient(160deg,var(--bg),var(--bg2));display:flex;align-items:center;justify-content:center;padding:16px}
+.card{width:100%;max-width:380px;background:var(--card);border-radius:18px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.brand{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:14px;text-align:center}
+.logo{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;flex:none;overflow:hidden}
+.logo img{display:block;width:100%;height:100%;object-fit:contain}
+h1{font-size:20px;line-height:1.2;margin:0}
+.sub{font-size:13px;color:var(--mut);margin:2px 0 0}
+p{line-height:1.5;font-size:14px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#e6eef2;border-radius:12px;padding:4px;margin:6px 0 14px}
+.tabs button{border:0;background:transparent;padding:10px 6px;border-radius:9px;font-size:14px;font-weight:600;font-family:inherit;color:var(--mut);cursor:pointer}
+.tabs button[aria-selected=true]{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.tabs button:focus-visible,input:focus-visible,.btn:focus-visible{outline:3px solid #7cc4ee;outline-offset:2px}
+label{display:block;font-size:13px;font-weight:600;margin:12px 0 6px}
+input[type=text],input[type=password]{width:100%;padding:13px 14px;font-size:16px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+input:focus{border-color:var(--bg)}
+.btn{display:block;width:100%;margin-top:20px;padding:14px;border:0;border-radius:10px;background:var(--acc);color:#2a1700;font-size:16px;font-weight:700;font-family:inherit;text-align:center;text-decoration:none;cursor:pointer}
+.btn:hover{background:var(--acc2)}
+.btn.alt{background:#e6eef2;color:var(--ink)}
+.err{background:#fdecea;color:var(--err);border:1px solid #f3c1bd;border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:14px}
+.hint{font-size:12px;color:var(--mut);margin:8px 0 0}
+.pane[hidden]{display:none}
+dl{margin:14px 0 0;display:grid;grid-template-columns:auto 1fr;gap:9px 14px;font-size:14px}
+dt{color:var(--mut)}
+dd{margin:0;text-align:right;font-weight:600;word-break:break-all}
+.ok{color:var(--ok)}
+.foot{margin:14px 0 0;text-align:center;font-size:12px;color:var(--mut)}
+@media(max-width:360px){.card{padding:18px}}
+@media(prefers-reduced-motion:no-preference){.card{animation:in .35s ease-out}@keyframes in{from{opacity:0;transform:translateY(8px)}}}
+</style>
+</head>
+<body>
+<main class="card">
+<div class="brand"><div class="logo"><img src="logo.png" alt="Logo WiFi"></div><div><h1>WiFi Fikri</h1><p class="sub">$(hostname)</p></div></div>
+
+$(if error)<div class="err" role="alert">$(error)</div>$(endif)
+
+<div class="tabs" role="tablist">
+  <button type="button" role="tab" id="tab-akun" aria-selected="true" aria-controls="pane-akun">Akun</button>
+  <button type="button" role="tab" id="tab-voucher" aria-selected="false" aria-controls="pane-voucher">Voucher</button>
+</div>
+
+<!-- SESI 1: LOGIN AKUN (username + password) -->
+<form class="pane" id="pane-akun" name="login" action="$(link-login-only)" method="post" onsubmit="return doLogin('akun')">
+  <label for="u1">Username</label>
+  <input type="text" id="u1" name="username" value="$(username)" autocomplete="username" autocapitalize="none" required>
+  <label for="p1">Password</label>
+  <input type="password" id="p1" name="password" autocomplete="current-password" required>
+  <button class="btn" type="submit">Masuk</button>
+  <p class="hint">Gunakan akun yang diberikan oleh admin.</p>
+</form>
+
+<!-- SESI 2: LOGIN VOUCHER (kode saja, tanpa password) -->
+<form class="pane" id="pane-voucher" name="voucher" action="$(link-login-only)" method="post" onsubmit="return doLogin('voucher')" hidden>
+  <label for="v1">Kode voucher</label>
+  <input type="text" id="v1" name="username" autocomplete="off" autocapitalize="none" spellcheck="false" required>
+  <button class="btn" type="submit">Pakai voucher</button>
+  <p class="hint">Cukup masukkan kode voucher, tanpa password.</p>
+</form>
+
+<!-- Form tersembunyi yang benar-benar dikirim ke router -->
+<form name="sendin" action="$(link-login-only)" method="post">
+  <input type="hidden" name="username">
+  <input type="hidden" name="password">
+  <input type="hidden" name="dst" value="$(link-orig)">
+  <input type="hidden" name="popup" value="false">
+</form>
+
+<p class="foot">Dengan masuk, Anda setuju menggunakan jaringan ini dengan wajar.</p>
+
+<script src="/md5.js"></script>
+<script>
+/* ===== PENGATURAN ===== 
+   VOUCHER_PASSWORD:
+     "empty" -> voucher dibuat TANPA password (password kosong di router)
+     "same"  -> voucher dibuat dengan password = kode voucher
+*/
+var VOUCHER_PASSWORD = "empty";
+
+var CHAP_ID = "$(chap-id)";
+var CHAP_CHALLENGE = "$(chap-challenge)";
+
+function sendLogin(user, pass) {
+  var f = document.sendin;
+  f.username.value = user;
+  if (CHAP_ID && typeof hexMD5 === "function") {
+    f.password.value = hexMD5(CHAP_ID + pass + CHAP_CHALLENGE);
+  } else {
+    f.password.value = pass;
+  }
+  f.submit();
+}
+
+function doLogin(mode) {
+  if (mode === "voucher") {
+    var code = document.voucher.username.value.replace(/^\s+|\s+$/g, "");
+    if (!code) return false;
+    sendLogin(code, VOUCHER_PASSWORD === "same" ? code : "");
+  } else {
+    sendLogin(document.login.username.value, document.login.password.value);
+  }
+  return false;
+}
+
+function showTab(name) {
+  var akun = name !== "voucher";
+  document.getElementById("pane-akun").hidden = !akun;
+  document.getElementById("pane-voucher").hidden = akun;
+  document.getElementById("tab-akun").setAttribute("aria-selected", akun);
+  document.getElementById("tab-voucher").setAttribute("aria-selected", !akun);
+  try { localStorage.setItem("hs_tab", name); } catch (e) {}
+  document.getElementById(akun ? "u1" : "v1").focus();
+}
+document.getElementById("tab-akun").onclick = function () { showTab("akun"); };
+document.getElementById("tab-voucher").onclick = function () { showTab("voucher"); };
+
+(function () {
+  var t = "akun";
+  try { t = localStorage.getItem("hs_tab") || "akun"; } catch (e) {}
+  if (t === "voucher") showTab("voucher");
+})();
+</script>
+
+</main>
+</body>
+</html>
